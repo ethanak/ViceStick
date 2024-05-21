@@ -76,7 +76,7 @@ void displayCurrentPort()
 static const char * const afmodes[2]={"Press","Still"};
 static const char * const fbswaps[2]={"straight","swapped"};
 static const char *const rotext[4]={"Plain","Left","Back","Right"};
-
+static const char *const rsptext[4]={"Off","Space","Enter","Alt+P"};
 void displayAutoFire()
 {
     display.clearDisplay();
@@ -128,8 +128,8 @@ void displayCurProg()
 
         case CURP_RSPACE:
         display.setTextSize(1,2);
-        display.setCursor(64-17*3,16);
-        display.printf("R/S on Fire2: %s",cur_rspace ? "yes":"no");
+        display.setCursor(64-16*3,16);
+        display.printf("Fire2 R/S: %s",rsptext[cur_rspace]);
         break;
         
         case CURP_PORT:

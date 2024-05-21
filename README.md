@@ -21,14 +21,14 @@ There are three extra buttons:
   * Short click - change current settings
   * Long press - change global options
 * Port
-  * Short click - show port (1 or 2)
+  * Short click - show current Commodore port (1 or 2)
   * Long click - change port
 
 ## Current settings
 
 * Fire buttons - straight or swapped
 * Joystick rotation - plain, left, back, right
-* Run/Stop and Space on Fire2 on/off - if not in keyset, sends Esc (short click) or Space bar code (longer press)
+* Run/Stop and Space on Fire2 (off, space, enter, Alt-P) - if not in keyset, sends clicking Esc (short click) or selected code (longer press)
 * Autofire period - 100 to 1000 msec in 10 steps
 * Autofire mode - press (only if fire button is pressed) or still
 * Autofire On/Off

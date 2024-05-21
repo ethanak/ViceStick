@@ -119,7 +119,7 @@ void startProgCurrent()
     memcpy((uint8_t *)&prg_JoyPset + 2, (uint8_t *)&CurrentEE + 2,2);
     cur_Pset = CurrentEE.lastPreset;
     cur_rot = CurrentEE.cur_extras & 3;
-    cur_rspace = (CurrentEE.cur_extras & 4)>>2;
+    cur_rspace = (CurrentEE.cur_extras >>2) & 3;
     MainMode = MODE_CURRENT;
     displayCurProg();
 }
@@ -176,7 +176,7 @@ void progCurrent()
             break;
 
             case CURP_RSPACE:
-            cur_rspace = 1-cur_rspace;
+            cur_rspace = (cur_rspace + (joy_Left->fell()?3:1)) & 3;
             break;
     
 
@@ -213,9 +213,9 @@ void progCurrent()
         waitUpKeys = 1;
         memcpy((uint8_t *)&CurrentEE+2,(uint8_t *)&prg_JoyPset+4,2);
         CurrentEE.lastPreset = cur_Pset;
-        CurrentEE.cur_extras = (CurrentEE.cur_extras & 0xf8) |
+        CurrentEE.cur_extras = (CurrentEE.cur_extras & 0xf0) |
             cur_rot |
-            ((cur_rspace & 1) << 2);
+            ((cur_rspace & 3) << 2);
         storeCurrent();    
         MainMode = 0;
         if (bleNameChanged()) {
@@ -826,7 +826,7 @@ int prgLoop()
     else {
         fire1 = 5;fire2 = 4;
     }
-    if (!hasFire2() && (CurrentEE.cur_extras & 4)) {
+    if (!hasFire2() && (CurrentEE.cur_extras & 12)) {
         if (FELLFIRE2) {
             rsTimer = millis();
             rsLock = 1;

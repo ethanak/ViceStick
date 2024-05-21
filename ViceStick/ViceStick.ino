@@ -90,20 +90,22 @@ static const struct rotbit {
 
 
 
-uint8_t keytable[6];
+uint16_t keytable[6];
 
 static uint8_t dirs4;
-static void makeKeyTable(uint8_t keys)
+static uint8_t makeKeyTable(uint8_t keys)
 {
     int nkeys=0;
-    memset(keytable,0,6);
+    memset(keytable,0,sizeof(keytable));
     if ((keys & (DIR_UP | DIR_DOWN)) == (DIR_UP | DIR_DOWN)) {
         keytable[0] = bleKeyNum; // Run/Stop
-        return;
+        //printf("QS=%03x\n",keytable[0]);delay(100);
+        return 1;
     }
     if ((keys & (DIR_LEFT | DIR_RITE)) == (DIR_LEFT | DIR_RITE)) {
-        keytable[0] = bleKeyNum+1; // Space bar
-        return;
+        keytable[0] = bleKeyNum+((CurrentEE.cur_extras >> 2) & 3); // Space bar etc
+        //printf("QS=%03x\n",keytable[0]);delay(100);
+        return 1;
     }
         
         
@@ -210,13 +212,14 @@ static void makeKeyTable(uint8_t keys)
     if (keys & DIR_FIRE) keytable[nkeys++] = keyset[8];
     if (keys & DIR_FIRE2) keytable[nkeys++] = keyset[9];
     while (nkeys < 6) keytable[nkeys++] = 0;
+    return 0;
 }
 
-void serprint(uint8_t *ktab)
+void serprint(uint16_t *ktab)
 {
-    static uint8_t lasts[]={0,0,0,0,0,0};
-    if (!memcmp(ktab,lasts,6)) return;
-    memcpy(lasts,ktab,6);
+    static uint16_t lasts[]={0,0,0,0,0,0};
+    if (!memcmp(ktab,lasts,12)) return;
+    memcpy(lasts,ktab,12);
     char buf[16],*c;
     buf[0]='#';
     c=buf+1;
@@ -224,7 +227,7 @@ void serprint(uint8_t *ktab)
     int i;
     for (i=0;i<6 && ktab[i];i++) {
         if (i) *c++=',';
-        c+=sprintf(c,"%02X",ktab[i]);
+        c+=sprintf(c,"%X",ktab[i]);
     }
     Serial.println(buf);
 }
@@ -255,7 +258,7 @@ void loop()
     if (serloop()) {
         if (!serialMode) {
             serialMode = 1;
-            uint8_t zero[]={0,0,0,0,0,0};
+            uint16_t zero[]={0,0,0,0,0,0};
             sendBt(zero);
         }
         serHeartTimer = millis();
@@ -263,8 +266,13 @@ void loop()
     else if (serialMode && millis() - serHeartTimer >= 1000) {
         serialMode = 0;
     }
-    //if (keys & 0x3f) printf("K=%02X\n",keys);
-    makeKeyTable(keys);
+#if 0
+    if (keys & 0x3f) {
+        printf("K=%02X\n",keys);
+        delay(100);
+    }
+#endif
+    int wkey=makeKeyTable(keys);
     serprint(keytable);
     if (serialMode) {
         digitalWrite(LED_BLE,millis()%1000 < 100);
@@ -279,6 +287,15 @@ void loop()
             if (rc > 0) delay(10);
         }
     }
+    if (wkey) {
+        delay(50);
+        makeKeyTable(0);
+        serprint(keytable);
+        int rc=sendBt(keytable);
+        if (rc > 0) delay(10);
+        while (prgLoop()) delay(10);
+    }
+        
     displayLoop();
 }
 

@@ -11,9 +11,11 @@ class serstick(object):
     e.KEY_F24, e.KEY_KP0, e.KEY_KP1, e.KEY_KP2, e.KEY_KP3, e.KEY_KP4,
     e.KEY_KP5, e.KEY_KP6, e.KEY_KP7, e.KEY_KP8, e.KEY_KP9,
     e.KEY_KPSLASH, e.KEY_KPASTERISK, e.KEY_KPPLUS, e.KEY_KPMINUS,
-    e.KEY_KPENTER, e.KEY_KPDOT, e.KEY_ESC, e.KEY_SPACE]
+    e.KEY_KPENTER, e.KEY_KPDOT, e.KEY_ESC, e.KEY_SPACE,e.KEY_ENTER,
+    (e.KEY_LEFTALT,e.KEY_P)]
     
     def __init__(self):
+        #print("%x" % len(self.__class__.keymap))
         self.args=sys.argv[1:]
         self.silent = False
         name = None
@@ -115,17 +117,26 @@ class serstick(object):
                     keys=list(self.__class__.keymap[int(x,16)] for x in sc.split(b','))
                 except:
                     continue
+            #(keys)
             nset=set(keys)
 
             for a in list(self.keyset):
                 if a not in nset:
                     #print('Del ',a)
-                    self.ui.write(e.EV_KEY,a,0)
+                    if isinstance(a,tuple):
+                        self.ui.write(e.EV_KEY,a[1],0)
+                        self.ui.write(e.EV_KEY,a[0],0)
+                    else:
+                        self.ui.write(e.EV_KEY,a,0)
                     self.keyset.remove(a)
             for a in nset:
                 if a not in self.keyset:
                     #print('Add ',a)
-                    self.ui.write(e.EV_KEY,a,1)
+                    if isinstance(a,tuple):
+                        self.ui.write(e.EV_KEY,a[0],1)
+                        self.ui.write(e.EV_KEY,a[1],1)
+                    else:
+                        self.ui.write(e.EV_KEY,a,1)
                     self.keyset.add(a)
             self.ui.syn()
             #print(self.keyset)

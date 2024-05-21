@@ -25,7 +25,7 @@
 
 
 const struct bleKey bleKeys[]={
-    {"=None=",0},         // 0
+    {"=Off=",0},         // 0
     {"F1",KEY_F1},      // 1
     {"F2",KEY_F2},      // 2
     {"F3",KEY_F3},      // 3
@@ -65,16 +65,18 @@ const struct bleKey bleKeys[]={
     {"PLUS",KEY_NUM_PLUS}, // 37
     {"MINUS",KEY_NUM_MINUS}, // 38
     {"ENTER",KEY_NUM_ENTER}, // 39
-    {"PERIOD",KEY_NUM_PERIOD}, // 40
+    {"DOT",KEY_NUM_PERIOD}, // 40
     
     {"Esc",KEY_ESC}, // Run/Stop
-    {"Space",0x2c}}; // Space bar
+    {"Space",0x2c}, // Space bar
+    {"Enter",0x28}, // Enter
+    {"Alt+P",0x413}}; //Pause
 
-const int bleKeyNum =(sizeof(bleKeys) / sizeof(bleKeys[0]))-2;
+const int bleKeyNum =(sizeof(bleKeys) / sizeof(bleKeys[0]))-4;
 
 BleKeyboard bleKeyboard;
 static char blename[16];
-static uint8_t lastKeys[6];
+static uint16_t lastKeys[6];
 void initBLE()
 {
     strcpy(blename,EEBluName);
@@ -100,31 +102,40 @@ void setBleName()
     }
 }
 
-static void addKey (KeyReport *kr, uint8_t key)
+static uint8_t addKey (KeyReport *kr, uint16_t key)
 {
-    int i;
+    int i,rc;
+    rc = 0;
+    if (key & 0xf00) {
+        kr->modifiers = (key >> 8) & 0x0f;
+        key &= 0xff;
+        memset(kr->keys,0,6);
+        rc=1;
+        
+    }
     if (key >= 136) key -= 136;
     else if (key >= 128) {
         kr->modifiers |= 1 << (key & 7);
-        return;
+        return 0;
     }
     for (i=0;i<6;i++) if (!kr->keys[i]) {
         kr->keys[i] = key;
         break;
     }
+    return rc;
 }
 
-int sendBt(uint8_t *ktab)
+int sendBt(uint16_t *ktab)
 {
     if(!bleKeyboard.isConnected()) return -1;
-    if (!memcmp(ktab,lastKeys,6)) return 0;
-    memcpy(lastKeys,ktab,6);
+    if (!memcmp(ktab,lastKeys,12)) return 0;
+    memcpy(lastKeys,ktab,12);
     KeyReport kr;
     memset((void *)&kr,0,sizeof(kr));
 
     int i;
     for (i=0;ktab[i];i++) {
-        addKey(&kr, bleKeys[ktab[i]].value);
+        if (addKey(&kr, bleKeys[ktab[i]].value)) break;
     }
     bleKeyboard.sendReport(&kr);
     return 1;

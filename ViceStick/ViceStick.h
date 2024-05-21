@@ -179,8 +179,8 @@ extern void storeAfPeriod();
 extern void storeCurrent();
 extern void storePrefs();
 extern const struct bleKey {
-    char name[7];
-    uint8_t value;
+    char name[6];
+    uint16_t value;
 } bleKeys[];
 
 extern const int bleKeyNum;
@@ -188,7 +188,7 @@ extern const int bleKeyNum;
 
 extern void initBLE();
 extern uint8_t bleNameChanged();
-extern int sendBt(uint8_t *ktab);
+extern int sendBt(uint16_t *ktab);
 
 extern const uint8_t numPadKeys[10];
 

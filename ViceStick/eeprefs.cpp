@@ -51,24 +51,6 @@ static const struct EEPrefs InitialEE={
         0,0
 };
 
-/*
-void initEE()
-{
-    struct JoyPreset jp={
-        "dd1",
-        1,0,0,4,0,1,0};
-
-    uint8_t ps[6];
-    memcpy(ps,&jp,6);
-    int i;
-    printf("%02X %02X\n",ps[4],ps[5]);
-    jp.autofire = 1;
-    jp.afspeed = 3;
-    memcpy(ps,&jp,6);
-    printf("%02X %02X\n",ps[4],ps[5]);
-    
-}
-*/
 
 static I2C_eeprom ee(0x50, I2C_DEVICESIZE_24LC02,&Wire);
 
@@ -92,7 +74,6 @@ void storeCurrent()
 {
     storeCDS;
     ee.writeBlock(offsetof(struct EEPrefs, lastPreset), (uint8_t *)&CurrentEE.lastPreset,2);
-    printf("OO %d\n",offsetof(struct EEPrefs, lastPreset));
 }
 
 
